@@ -1,0 +1,15 @@
+---
+- name: Install and configure Prometheus, Grafana and Alertmanager in Docker
+  hosts: monitoring
+  gather_facts: false
+  become: true
+  #become_user: "{{ become_usr }}"
+
+  roles:
+    - role: prometheus
+      tags: prometheus
+    - role: grafana
+      tags: grafana
+    - role: alertmanager
+      tags: alertmanager
+...

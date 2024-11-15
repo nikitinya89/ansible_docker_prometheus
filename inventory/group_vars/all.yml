@@ -1,0 +1,10 @@
+prometheus_version: "v2.55.1"
+grafana_version: "10.2.1"
+alertmanager_version: "v0.26.0"
+
+prometheus_port: 9090
+grafana_port: 3000
+alertmanager_port: 9093
+
+docker_network: "monitoring_net"
+
