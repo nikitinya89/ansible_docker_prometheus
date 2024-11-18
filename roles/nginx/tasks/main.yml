@@ -1,0 +1,38 @@
+---
+- name: Install nginx
+  apt:
+    name: nginx
+    state: present
+    update_cache: true
+  tags: nginx
+
+- name: Start nginx service
+  systemd:
+    name: nginx
+    state: started
+    enabled: true
+  tags: nginx
+
+- name: Add nginx conf for monitoring
+  template:
+    src: templates/monitoring_proxy.conf.j2
+    dest: /etc/nginx/sites-available/monitoring-proxy.conf
+    owner: root
+    group: root
+    mode: 0644
+  notify: Reload nginx
+  tags: nginx
+
+- name: Enable site
+  file:
+    src: /etc/nginx/sites-available/monitoring-poxy.conf
+    dest: /etc/nginx/sites-enabled/monitorinf-proxy.conf
+    owner: root
+    group: root
+    state: link
+  notify: Reload nginx
+  tags: nginx
+
+- name: Reload nginx
+  meta: flush_handlers
+  tags: nginx
