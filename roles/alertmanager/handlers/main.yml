@@ -1,5 +1,5 @@
-- name: Restart prometheus
+- name: Restart alertmanager
   docker_container:
-    name: prometheus
+    name: alertmanager
     state: started
     restart: true

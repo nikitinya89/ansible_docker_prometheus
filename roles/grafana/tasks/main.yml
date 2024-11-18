@@ -1,0 +1,64 @@
+- name: Create Grafana user
+  user:
+    name: grafana
+    shell: /sbin/nologin
+    create_home: false
+    system: true
+    state: present
+  register: grafana_user
+  tags: grafana
+
+- name: Get UID and GID for grafana user
+  set_fact:
+    grafana_uid: "{{ grafana_user.uid }}"
+    grafana_gid: "{{ grafana_user.group }}"
+  tags: grafana
+
+- name: Create Grafana directories
+  file:
+    path: "{{ item }}"
+    state: directory
+    owner: grafana
+    group: grafana
+    mode: 0755
+  with_items:
+    - /etc/grafana
+    - /var/lib/grafana
+  tags: grafana
+
+- name: Copy prometheus config files
+  template:
+    src: "templates/{{ item }}.j2"
+    dest: "/etc/grafana/{{ item }}"
+    owner: grafana
+    group: grafana
+    mode: 0755
+  with_items:
+    - grafana.ini
+  notify: Restart grafana
+  tags: grafana
+
+- name: Create Docker network for monitoring
+  docker_network:
+    name: "{{ docker_network }}"
+    state: present
+  tags: grafana
+
+- name: Run Grafana container
+  docker_container:
+    name: grafana
+    user: "{{ grafana_uid }}:{{ grafana_gid }}"
+    image: grafana/grafana:{{ grafana_version }}
+    ports:
+      - "{{ grafana_port }}:3000"
+    volumes:
+      - /etc/grafana:/etc/grafana
+      - /var/lib/grafana:/var/lib/grafana
+    networks:
+      - name: "{{ docker_network }}"
+    restart_policy: always
+  tags: grafana
+
+- name: Restart grafana
+  meta: flush_handlers
+  tags: grafana

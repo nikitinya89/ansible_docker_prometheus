@@ -1,0 +1,62 @@
+- name: Create Grafana user
+  user:
+    name: alertmanager
+    shell: /sbin/nologin
+    create_home: false
+    system: true
+    state: present
+  register: alertmanager_user
+  tags: alertmanager
+
+- name: Get UID and GID for alertmanager user
+  set_fact:
+    alertmanager_uid: "{{ alertmanager_user.uid }}"
+    alertmanager_gid: "{{ alertmanager_user.group }}"
+  tags: alertmanager
+
+- name: Create Alertmanager directories
+  file:
+    path: "{{ item }}"
+    state: directory
+    owner: alertmanager
+    group: alertmanager
+    mode: 0755
+  with_items:
+    - /etc/alertmanager
+  tags: alertmanager
+
+- name: Copy alertmanager config files
+  template:
+    src: "templates/{{ item }}.j2"
+    dest: "/etc/alertmanager/{{ item }}"
+    owner: alertmanager
+    group: alertmanager
+    mode: 0755
+  with_items:
+    - alertmanager.yml
+  notify: Restart alertmanager
+  tags: alertmanager
+
+- name: Create Docker network for monitoring
+  docker_network:
+    name: "{{ docker_network }}"
+    state: present
+  tags: alertmanager
+
+- name: Run Alertmanager container
+  docker_container:
+    name: alertmanager
+    user: "{{ alertmanager_uid }}:{{ alertmanager_gid }}"
+    image: prom/alertmanager:{{ alertmanager_version }}
+    ports:
+      - "{{ alertmanager_port }}:9093"
+    volumes:
+      - /etc/alertmanager:/etc/alertmanager
+    networks:
+      - name: "{{ docker_network }}"
+    restart_policy: always
+  tags: alertmanager
+
+- name: Restart alertmanager
+  meta: flush_handlers
+  tags: alertmanager

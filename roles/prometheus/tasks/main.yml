@@ -1,15 +1,19 @@
 ---
-- name: Create prometheus user
+- name: Create Prometheus user
   user:
     name: prometheus
     shell: /sbin/nologin
     create_home: false
     system: true
     state: present
-#    groups: monitoring
-    append: true
+  register: prometheus_user
   tags: prometheus
 
+- name: Get UID and GID for prometheus user
+  set_fact:
+    prometheus_uid: "{{ prometheus_user.uid }}"
+    prometheus_gid: "{{ prometheus_user.group }}"
+  tags: prometheus
 
 - name: Create Prometheus directories
   file:
@@ -36,10 +40,6 @@
   notify: Restart prometheus
   tags: prometheus
 
-- name: Restart prometheus
-  meta: flush_handlers
-  tags: prometheus
-
 - name: Create Docker network for monitoring
   docker_network:
     name: "{{ docker_network }}"
@@ -49,13 +49,18 @@
 - name: Run Prometheus container
   docker_container:
     name: prometheus
+    user: "{{ prometheus_uid }}:{{ prometheus_gid }}"
     image: prom/prometheus:{{ prometheus_version }}
     ports:
       - "{{ prometheus_port }}:9090"
     volumes:
       - /etc/prometheus:/etc/prometheus
+      - /var/lib/prometheus:/prometheus
     networks:
       - name: "{{ docker_network }}"
     restart_policy: always
   tags: prometheus
 
+- name: Restart prometheus
+  meta: flush_handlers
+  tags: prometheus
