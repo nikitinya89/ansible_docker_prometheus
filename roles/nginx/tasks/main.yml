@@ -15,7 +15,7 @@
 
 - name: Add nginx conf for monitoring
   template:
-    src: templates/monitoring_proxy.conf.j2
+    src: templates/monitoring-proxy.conf.j2
     dest: /etc/nginx/sites-available/monitoring-proxy.conf
     owner: root
     group: root
@@ -25,7 +25,7 @@
 
 - name: Enable site
   file:
-    src: /etc/nginx/sites-available/monitoring-poxy.conf
+    src: /etc/nginx/sites-available/monitoring-proxy.conf
     dest: /etc/nginx/sites-enabled/monitorinf-proxy.conf
     owner: root
     group: root
