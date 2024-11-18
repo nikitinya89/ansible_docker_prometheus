@@ -18,7 +18,10 @@ scrape_configs:
 
   - job_name: "node exporter"
     static_configs:
-      - targets: []
+      - targets:
+{% for item in node_targets %}
+        - {{ item }}:9100
+{% endfor %}
 
     relabel_configs:
       - source_labels: [__address__]
@@ -28,7 +31,10 @@ scrape_configs:
 
   - job_name: "windows exporter"
     static_configs:
-      - targets: []
+      - targets:
+{% for item in win_targets %}
+        - {{ item }}:9182
+{% endfor %}
 
     relabel_configs:
       - source_labels: [__address__]

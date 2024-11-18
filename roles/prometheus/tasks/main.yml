@@ -1,0 +1,61 @@
+---
+- name: Create prometheus user
+  user:
+    name: prometheus
+    shell: /sbin/nologin
+    create_home: false
+    system: true
+    state: present
+#    groups: monitoring
+    append: true
+  tags: prometheus
+
+
+- name: Create Prometheus directories
+  file:
+    path: "{{ item }}"
+    state: directory
+    owner: prometheus
+    group: prometheus
+    mode: 0755
+  with_items:
+    - /etc/prometheus
+    - /var/lib/prometheus
+  tags: prometheus
+
+- name: Copy prometheus config files
+  template:
+    src: "templates/{{ item }}.j2"
+    dest: "/etc/prometheus/{{ item }}"
+    owner: prometheus
+    group: prometheus
+    mode: 0755
+  with_items:
+    - prometheus.yml
+    - rules.yml
+  notify: Restart prometheus
+  tags: prometheus
+
+- name: Restart prometheus
+  meta: flush_handlers
+  tags: prometheus
+
+- name: Create Docker network for monitoring
+  docker_network:
+    name: "{{ docker_network }}"
+    state: present
+  tags: prometheus
+
+- name: Run Prometheus container
+  docker_container:
+    name: prometheus
+    image: prom/prometheus:{{ prometheus_version }}
+    ports:
+      - "{{ prometheus_port }}:9090"
+    volumes:
+      - /etc/prometheus:/etc/prometheus
+    networks:
+      - name: "{{ docker_network }}"
+    restart_policy: always
+  tags: prometheus
+

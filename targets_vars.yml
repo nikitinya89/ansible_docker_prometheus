@@ -1,0 +1,21 @@
+node_targets:
+  - nas
+  - marker_tracker
+  - 45.43.90.153
+
+win_targets:
+  - GS-SRV-01
+  - GS-SRV-02
+  - GS-SRV-03
+  - GS-SRV-04
+  - GS-SRV-05
+  - FS
+  - FS02
+  - Dev01
+  - Dev05
+  - DevSQL01
+  - GS-1C
+  - GS-RDS
+
+
+
