@@ -1,0 +1,8 @@
+prometheus_domain_name: "prometheus.example.com"
+grafana_domain_name: "grafana.example.com"
+alertmanager_domain_name: "alertmanager.example.com"
+
+telegram_chat_id: "-1111111111111111"
+telegram_bot_token: "11111111111111111111111111111111"
+
+
