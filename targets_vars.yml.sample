@@ -1,0 +1,10 @@
+node_targets:
+  - server01
+  - server02
+  - server03
+
+win_targets:
+  - win_server01
+  - win_server02
+  - win_server03
+

@@ -13,7 +13,3 @@ nginx_ssl_port: 443
 enable_ssl: false
 
 docker_network: "monitoring_net"
-
-prometheus_domain_name: "prometheus:geosplit.ru"
-grafana_domain_name: "grafana.geosplit.ru"
-alertmanager_domain_name: "alertmanager.geosplit.ru"

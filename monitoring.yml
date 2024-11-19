@@ -4,8 +4,9 @@
   gather_facts: false
   become: true
   vars_files:
-    - targets_vars.yml
     - inventory/group_vars/all.yml
+    - targets_vars.yml
+    - vault_vars.yml
 
   roles:
     - role: docker
