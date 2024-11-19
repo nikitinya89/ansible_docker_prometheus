@@ -1,4 +1,4 @@
-- name: Create Grafana user
+- name: Create Alertmanager user
   user:
     name: alertmanager
     shell: /sbin/nologin
@@ -18,8 +18,10 @@
   file:
     path: "{{ item }}"
     state: directory
-    owner: alertmanager
-    group: alertmanager
+#    owner: alertmanager
+#    group: alertmanager
+    owner: 65534
+    group: 65534
     mode: 0755
   with_items:
     - /etc/alertmanager
@@ -29,11 +31,25 @@
   template:
     src: "templates/{{ item }}.j2"
     dest: "/etc/alertmanager/{{ item }}"
-    owner: alertmanager
-    group: alertmanager
+#    owner: alertmanager
+#    group: alertmanager
+    owner: 65534
+    group: 65534
     mode: 0755
   with_items:
     - alertmanager.yml
+  notify: Restart alertmanager
+  tags: alertmanager
+
+- name: Copy telegram templates
+  copy:
+    src: "files/telegram.tmpl"
+    dest: "/etc/alertmanager/telegram.tmpl"
+#    owner: alertmanager
+#    group: alertmanager
+    owner: 65534
+    group: 65534
+    mode: 0755
   notify: Restart alertmanager
   tags: alertmanager
 
@@ -46,7 +62,8 @@
 - name: Run Alertmanager container
   docker_container:
     name: alertmanager
-    user: "{{ alertmanager_uid }}:{{ alertmanager_gid }}"
+#    user: "{{ alertmanager_uid }}:{{ alertmanager_gid }}"
+    user: 65534:65534
     image: prom/alertmanager:{{ alertmanager_version }}
     ports:
       - "{{ alertmanager_port }}:9093"
