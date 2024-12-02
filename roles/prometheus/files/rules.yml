@@ -1,0 +1,56 @@
+groups:
+  - name: linux_rules
+    rules:
+    
+#==========Host is Down=========================================================  
+
+      - alert: InstanceDown
+        expr: up == 0
+        for: 60s
+        labels:
+          severity: critical
+        annotations:
+          summary: "Host {{ $labels.instance }} is down"
+          description: "Host {{ $labels.instance }} has been down for more than 1 minute."
+
+#==========High CPU Usage=======================================================
+
+      - alert: HighCPUUsage
+        expr: 100 - (avg by(instance) (rate(node_cpu_seconds_total{mode="idle"}[5m])) * 100) > 90
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High CPU usage on {{ $labels.instance }}"
+          description: "CPU usage is above 90% on {{ $labels.instance }} for the last 2 minutes."
+
+#==========High Memory Usage====================================================
+
+      - alert: HighMemoryUsage
+        expr: (node_memory_MemTotal_bytes - node_memory_MemAvailable_bytes) / node_memory_MemTotal_bytes * 100 > 85
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "High memory usage on {{ $labels.instance }}"
+          description: "Memory usage is above 85% on {{ $labels.instance }}."
+
+#==========Disk Space Low====================================================
+
+      - alert: WarningFreeDiskSpace
+        expr: (node_filesystem_avail_bytes{mountpoint!~"/(boot|tmp|var/log)"} / node_filesystem_size_bytes{mountpoint!~"/(boot|tmp|var/log)"}) * 100 < 15
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Low disk space on {{ $labels.instance }} ({{ $labels.mountpoint }})"
+          description: "The disk space is less than 15% on {{ $labels.instance }} (mount point {{ $labels.mountpoint }})."
+
+      - alert: CriticalFreeDiskSpace
+        expr: (node_filesystem_avail_bytes{mountpoint!~"/(boot|tmp|var/log)"} / node_filesystem_size_bytes{mountpoint!~"/(boot|tmp|var/log)"}) * 100 < 5
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Low disk space on {{ $labels.instance }} ({{ $labels.mountpoint }})"
+          description: "The disk space is less than 5% on {{ $labels.instance }} (mount point {{ $labels.mountpoint }})."

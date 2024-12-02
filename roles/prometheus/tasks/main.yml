@@ -36,9 +36,20 @@
     mode: 0755
   with_items:
     - prometheus.yml
-    - rules.yml
   notify: Restart prometheus
   tags: prometheus
+
+- name: Copy prometheus rules
+  copy:
+    src: "files/{{ item }}"
+    dest: "/etc/prometheus/{{ item }}"
+    owner: prometheus
+    group: prometheus
+    mode: 0755
+  with_items:
+    - rules.yml
+  notify: Restart prometheus
+  tags: prometheus  
 
 - name: Create Docker network for monitoring
   docker_network:

@@ -21,6 +21,7 @@
     owner: grafana
     group: grafana
     mode: 0755
+    recurse: true
   with_items:
     - /etc/grafana
     - /var/lib/grafana
