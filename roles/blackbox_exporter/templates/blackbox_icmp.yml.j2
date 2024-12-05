@@ -1,0 +1,7 @@
+$ sudo nano /etc/prometheus/targets.d/blackbox-icmp.yml
+- targets:
+{% for item in icmp_targets %}
+  - {{ item }}
+{% endfor %}
+  labels:
+    alias: ping

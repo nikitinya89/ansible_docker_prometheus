@@ -8,3 +8,7 @@ win_targets:
   - win_server02
   - win_server03
 
+icmp_targets:
+  - icmp_target01
+  - icmp_target02
+  - icmp_target03

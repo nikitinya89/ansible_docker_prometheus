@@ -41,3 +41,21 @@ scrape_configs:
         regex: ([^:]+):\d+
         target_label: instance
         replacement: ${1}
+
+{% if enable_blackbox %}
+  - job_name: 'Blackbox_ICMP'
+    scrape_interval: 1m
+    metrics_path: /probe
+    params:
+      module: [icmp]
+    file_sd_configs:
+      - files:
+        - /etc/prometheus/blackbox_icmp.yml
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: __param_target
+      - source_labels: [__param_target]
+        target_label: instance
+      - target_label: __address__
+        replacement: blackbox_exporter:9115
+{% endif %}

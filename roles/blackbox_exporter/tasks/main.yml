@@ -1,0 +1,69 @@
+- name: Create Blackbox Exporter user
+  user:
+    name: blackbox_exporter
+    shell: /sbin/nologin
+    create_home: false
+    system: true
+    state: present
+  register: blackbox_exporter_user
+  tags: blackbox_exporter
+
+- name: Get UID and GID for blackbox_exporter user
+  set_fact:
+    blackbox_exporter_uid: "{{ blackbox_exporter_user.uid }}"
+    blackbox_exporter_gid: "{{ blackbox_exporter_user.group }}"
+  tags: blackbox_exporter
+
+- name: Create Blackbox Exporter directory
+  file:
+    path: /etc/blackbox
+    state: directory
+    owner: blackbox_exporter
+    group: blackbox_exporter
+    mode: 0755
+    recurse: true
+  tags: blackbox_exporter
+
+- name: Copy Blackbox Exporter config files
+  copy:
+    src: "files/{{ item }}"
+    dest: "/etc/blackbox/{{ item }}"
+    owner: blackbox_exporter
+    group: blackbox_exporter
+    mode: 0644
+  with_items:
+    - blackbox.yml
+  notify: Restart blackbox exporter
+  tags: blackbox_exporter
+
+- name: Copy Blackbox Exporter hosts list file
+  template:
+    src: "templates/{{ item }}.j2"
+    dest: "/etc/prometheus/{{ item }}"
+    owner: prometheus
+    group: prometheus
+    mode: 0644
+  with_items:
+    - blackbox_icmp.yml
+  notify: Restart prometheus
+  tags: blackbox_exporter
+
+- name: Create Docker network for monitoring
+  docker_network:
+    name: "{{ docker_network }}"
+    state: present
+  tags: blackbox_exporter
+
+- name: Run Blackbox Exporter container
+  docker_container:
+    name: blackbox_exporter
+    user: "{{ blackbox_exporter_uid }}:{{ blackbox_exporter_gid }}"
+    image: prom/blackbox-exporter:{{ blackbox_exporter_version }}
+    ports:
+      - "{{ blackbox_exporter_port }}:9115"
+    volumes:
+      - /etc/blackbox_exporter:/config
+    networks:
+      - name: "{{ docker_network }}"
+    restart_policy: always
+  tags: blackbox_exporter

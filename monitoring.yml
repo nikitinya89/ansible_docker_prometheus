@@ -3,6 +3,8 @@
   hosts: all
   gather_facts: false
   become: true
+  vars:
+    enable_blackbox: true
   vars_files:
     - inventory/group_vars/all.yml
     - targets_vars.yml
@@ -23,6 +25,10 @@
 
     - role: node_exporter
       tags: node_exporter
+
+    - role: blackbox_exporter
+      tags: blackbox_exporter
+      when: enable_blackbox | bool
 
     - role: nginx
       tags: nginx
