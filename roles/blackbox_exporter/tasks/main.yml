@@ -44,7 +44,7 @@
     group: prometheus
     mode: 0644
   with_items:
-    - blackbox_icmp.yml
+    - blackbox-icmp.yml
   notify: Restart prometheus
   tags: blackbox_exporter
 
