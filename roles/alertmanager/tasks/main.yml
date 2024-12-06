@@ -69,6 +69,8 @@
       - "{{ alertmanager_port }}:9093"
     volumes:
       - /etc/alertmanager:/etc/alertmanager
+    env:
+      TZ: "Europe/Moscow"
     networks:
       - name: "{{ docker_network }}"
     restart_policy: always

@@ -1,17 +1,41 @@
 groups:
-  - name: linux_rules
-    rules:
-    
+
 #==========Host is Down=========================================================  
 
-      - alert: InstanceDown
-        expr: up == 0
-        for: 60s
+  - name: availability
+    interval: 30s
+    rules:
+      - alert: NodeExporterDown
+        expr: up{job="node exporter"} == 0
+        for: 15s
         labels:
           severity: critical
         annotations:
           summary: "Host {{ $labels.instance }} is down"
-          description: "Host {{ $labels.instance }} has been down for more than 1 minute."
+          description: "Node Exporter instance {{ $labels.instance }} has been unavailable for more than 1 minute."
+
+      - alert: WindowsExporterDown
+        expr: up{job="windows exporter"} == 0
+        for: 15s
+        labels:
+          severity: critical
+        annotations:
+          summary: "Host {{ $labels.instance }} is down"
+          description: "Windows Exporter {{ $labels.instance }} has been unavailable for more than 1 minute."
+
+      - alert: BlackboxTargetDown
+        expr: probe_success == 0
+        for: 15s
+        labels:
+          severity: critical
+        annotations:
+          summary: "Host {{ $labels.instance }} is down"
+          description: "Blackbox target {{ $labels.instance }} has been unavailable for more than 1 minute."
+
+#==============================================================================
+
+  - name: linux_rules
+    rules:
 
 #==========High CPU Usage=======================================================
 
@@ -54,3 +78,4 @@ groups:
         annotations:
           summary: "Low disk space on {{ $labels.instance }} ({{ $labels.mountpoint }})"
           description: "The disk space is less than 5% on {{ $labels.instance }} (mount point {{ $labels.mountpoint }})."
+
