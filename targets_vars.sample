@@ -12,3 +12,8 @@ icmp_targets:
   - icmp_target01
   - icmp_target02
   - icmp_target03
+
+idrac_targets:
+  - idrac_server01
+  - idrac_server02
+  - idrac_server03

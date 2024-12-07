@@ -5,6 +5,7 @@
   become: true
   vars:
     enable_blackbox: true
+    enable_idrac: true
   vars_files:
     - inventory/group_vars/all.yml
     - targets_vars.yml
@@ -29,6 +30,10 @@
     - role: blackbox_exporter
       tags: blackbox_exporter
       when: enable_blackbox | bool
+
+    - role: idrac_exporter
+      tags: idrac_exporter
+      when: enable_idrac | bool
 
     - role: nginx
       tags: nginx

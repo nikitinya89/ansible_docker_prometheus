@@ -1,0 +1,62 @@
+- name: Create iDRAC Exporter user
+  user:
+    name: idrac_exporter
+    shell: /sbin/nologin
+    create_home: false
+    system: true
+    state: present
+  register: idrac_user
+  tags: idrac_exporter
+
+- name: Get UID and GID for idrac_exporter user
+  set_fact:
+    idrac_uid: "{{ idrac_user.uid }}"
+    idrac_gid: "{{ idrac_user.group }}"
+  tags: idrac_exporter
+
+- name: Create iDRAC Exporter directories
+  file:
+    path: "{{ item }}"
+    state: directory
+    owner: idrac_exporter
+    group: idrac_exporter
+    mode: 0755
+  with_items:
+    - /etc/idrac_exporter
+  tags: idrac_exporter
+
+- name: Copy idrac_exporter config files
+  template:
+    src: "templates/{{ item }}.j2"
+    dest: "/etc/idrac_exporter/{{ item }}"
+    owner: idrac_exporter
+    group: idrac_exporter
+    mode: 0755
+  with_items:
+    - idrac.yml
+  notify: Restart idrac_exporter
+  tags: idrac_exporter
+
+- name: Create Docker network for monitoring
+  docker_network:
+    name: "{{ docker_network }}"
+    state: present
+  tags: idrac_exporter
+
+- name: Run iDRAC Exporter container
+  docker_container:
+    name: idrac_exporter
+    user: "{{ idrac_uid }}:{{ idrac_gid }}"
+    image: "mrlhansen/idrac_exporter:{{ idrac_exporter_version }}"
+    ports:
+      - "{{ idrac_exporter_port }}:9348"
+    volumes:
+      - /etc/idrac_exporter/idrac.yml:/etc/prometheus/idrac.yml
+    networks:
+      - name: "{{ docker_network }}"
+    restart_policy: always
+  tags: idrac_exporter
+
+- name: Restart idrac_exporter
+  meta: flush_handlers
+  tags: idrac_exporter

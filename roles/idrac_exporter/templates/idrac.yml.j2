@@ -1,0 +1,18 @@
+address: 127.0.0.1 # Listen address
+port: 9348         # Listen port
+timeout: 10        # HTTP timeout (in seconds) for Redfish API calls
+hosts:
+{% for item in idrac_targets %}
+    {{ item }}
+{% endfor %}  
+  default:
+    username: {{ idrac_user }}
+    password: {{ idrac_password }}
+metrics:
+  system:  true
+  sensors: true
+  power:   true
+  events:  true
+  storage: true
+  memory:  true
+  network: true
