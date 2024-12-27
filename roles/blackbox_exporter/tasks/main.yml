@@ -21,7 +21,6 @@
     owner: blackbox_exporter
     group: blackbox_exporter
     mode: 0755
-    recurse: true
   tags: blackbox_exporter
 
 - name: Copy Blackbox Exporter config files

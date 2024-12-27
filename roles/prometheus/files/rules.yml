@@ -43,7 +43,7 @@ groups:
         expr: 100 - (avg by(instance) (rate(node_cpu_seconds_total{mode="idle"}[5m])) * 100) > 90
         for: 2m
         labels:
-          severity: warning
+          severity: critical
         annotations:
           summary: "High CPU usage on {{ $labels.instance }}"
           description: "CPU usage is above 90% on {{ $labels.instance }} for the last 2 minutes."
@@ -51,8 +51,8 @@ groups:
 #==========High Memory Usage====================================================
 
       - alert: HighMemoryUsage
-        expr: (node_memory_MemTotal_bytes - node_memory_MemAvailable_bytes) / node_memory_MemTotal_bytes * 100 > 85
-        for: 2m
+        expr: (node_memory_MemTotal_bytes - node_memory_MemAvailable_bytes) / node_memory_MemTotal_bytes * 100 > 95
+        for: 5m
         labels:
           severity: critical
         annotations:
@@ -78,4 +78,86 @@ groups:
         annotations:
           summary: "Low disk space on {{ $labels.instance }} ({{ $labels.mountpoint }})"
           description: "The disk space is less than 5% on {{ $labels.instance }} (mount point {{ $labels.mountpoint }})."
+
+#==========Inodes Usage========================================================
+
+      - alert: CriticalInodesUsage
+        expr: (node_filesystem_files_free / node_filesystem_files) * 100 < 5
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Critical inodes usage on {{ $labels.instance }} ({{ $labels.mountpoint }})"
+          description: "Inodes usage is above 95% on {{ $labels.instance }} (mount point {{ $labels.mountpoint }})."
+
+#==============================================================================
+
+  - name: windows_rules
+    rules:
+
+#==========High CPU Usage=======================================================
+
+      - alert: HighCPUUsageWindows
+        expr: 100 - (avg by(instance) (rate(windows_cpu_time_total{mode="idle"}[5m])) * 100) > 90
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "High CPU usage on {{ $labels.instance }}"
+          description: "CPU usage is above 90% on {{ $labels.instance }} for the last 2 minutes."
+
+#==========High Memory Usage====================================================
+
+      - alert: HighMemoryUsageWindows
+        expr: (1 - (windows_memory_available_bytes / windows_os_physical_memory_bytes)) * 100 > 95
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "High memory usage on {{ $labels.instance }}"
+          description: "Memory usage is above 95% on {{ $labels.instance }}."
+
+#==========Disk Space Low=======================================================
+
+      - alert: WarningFreeDiskSpaceWindows
+        expr: (windows_logical_disk_free_bytes{volume!~"C:\\/PageFile.sys"} / windows_logical_disk_size_bytes{volume!~"C:\\/PageFile.sys"}) * 100 < 15
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Low disk space on {{ $labels.instance }} ({{ $labels.volume }})"
+          description: "The disk space is less than 15% on {{ $labels.instance }} (volume {{ $labels.volume }})."
+
+      - alert: CriticalFreeDiskSpaceWindows
+        expr: (windows_logical_disk_free_bytes{volume!~"C:\\/PageFile.sys"} / windows_logical_disk_size_bytes{volume!~"C:\\/PageFile.sys"}) * 100 < 5
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Low disk space on {{ $labels.instance }} ({{ $labels.volume }})"
+          description: "The disk space is less than 5% on {{ $labels.instance }} (volume {{ $labels.volume }})."
+
+#==========High Disk Queue Length================================================
+
+      - alert: HighDiskQueueLengthWindows
+        expr: avg by(instance, volume) (rate(windows_logical_disk_avg_disk_queue_length[5m])) > 2
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High disk queue length on {{ $labels.instance }} ({{ $labels.volume }})"
+          description: "The average disk queue length is above 2 for volume {{ $labels.volume }} on {{ $labels.instance }}."
+
+#==========High Handle Count====================================================
+
+      - alert: HighHandleCountWindows
+        expr: windows_process_handles > 30000
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High handle count on {{ $labels.instance }}"
+          description: "The handle count is above 30,000 on {{ $labels.instance }}."
+
+#==============================================================================
 
